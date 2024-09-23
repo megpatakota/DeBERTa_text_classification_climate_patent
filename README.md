@@ -2,6 +2,10 @@
 
 [![Personal Project](https://img.shields.io/badge/Project-Personal-green)](https://meg-patakota.github.io)
 [![by Meg Patakota](https://img.shields.io/badge/by-Meg%20Patakota-blue)](https://meg-patakota.github.io)
+[![Project Status](https://img.shields.io/badge/Status-In%20Development-orange)](https://github.com/yourusername/patent-classification-deberta)
+
+> ⚠️ **Disclaimer:** This project is currently under active development. Features, code, and documentation are subject to change as it evolves.
+
 
 A Python tool that uses **DeBERTa** for identifying **climate change mitigation technologies** from patent data, based on the **IPCC classification** system.
 
