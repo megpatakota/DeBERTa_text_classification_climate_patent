@@ -1,0 +1,40 @@
+# configs/config.yaml
+
+data:
+  data_file: "data/climate_patent_data.csv"
+  sample_size: 2  # Use null to process all data
+  required_columns:
+    - title
+    - abstract
+    - claims
+    - yo2
+
+model:
+  name: "microsoft/deberta-base"
+  num_labels: 2
+  max_length: 512
+
+training:
+  output_dir: "results/"
+  logging_dir: "logs/"
+  trained_model_dir: "models/trained_model/"
+  num_train_epochs: 3
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
+  warmup_steps: 500
+  weight_decay: 0.01
+  evaluation_strategy: "epoch"
+  save_strategy: "epoch"
+  load_best_model_at_end: true
+  metric_for_best_model: "eval_loss"
+  greater_is_better: false
+  logging_steps: 10
+  logging_first_step: true
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(levelname)s - %(message)s"
+  log_file: "logs/training.log"  
+
+evaluation:
+  output_dir: "output_visualization/"

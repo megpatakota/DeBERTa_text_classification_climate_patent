@@ -1,0 +1,11 @@
+# ignore csv files
+*.csv
+
+# ignore log files
+logs/
+
+# ignore models
+models/
+
+# ignore results 
+results/
