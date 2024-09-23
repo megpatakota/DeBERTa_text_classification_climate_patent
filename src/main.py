@@ -1,0 +1,101 @@
+# src/main.py
+
+import logging
+import torch
+import yaml
+import os
+from transformers import DebertaTokenizer, DebertaForSequenceClassification
+from data_utils import load_data, preprocess_data, sample_data, split_data
+from train import get_training_arguments, train_model
+from model_utils import create_datasets, predict_proba 
+from visual_results import generate_evaluation_reports_and_plots
+
+def setup_logging(config):
+    logging_level = getattr(logging, config['logging']['level'])
+    logging.basicConfig(
+        level=logging_level,
+        format=config['logging']['format'],
+        # handlers=[
+        #     logging.FileHandler(config['logging']['log_file']),
+        #     logging.StreamHandler()
+        # ]
+    )
+
+def main():
+    # Load configuration
+    with open('config.yaml', 'r') as f:
+        config = yaml.safe_load(f)
+
+    # Set up logging
+    setup_logging(config)
+
+    # Ensure output directories exist
+    os.makedirs(config['training']['output_dir'], exist_ok=True)
+    os.makedirs(config['training']['logging_dir'], exist_ok=True)
+    os.makedirs(config['training']['trained_model_dir'], exist_ok=True)
+
+    # Load tokenizer and model
+    logging.info("Loading tokenizer and model...")
+    tokenizer = DebertaTokenizer.from_pretrained(config['model']['name'])
+    model = DebertaForSequenceClassification.from_pretrained(
+        config['model']['name'],
+        num_labels=config['model']['num_labels']
+    )
+
+    # Load and preprocess data
+    df = load_data(config)
+    df = preprocess_data(df, config)
+    df = sample_data(df, config)
+    train_texts, test_texts, train_labels, test_labels = split_data(df)
+
+    # Create datasets
+    train_dataset, test_dataset = create_datasets(
+        train_texts, train_labels, test_texts, test_labels, tokenizer, config
+    )
+
+    # Get device
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model.to(device)
+
+    # Training arguments
+    training_args = get_training_arguments(config)
+
+    # Train model
+    trainer = train_model(model, train_dataset, test_dataset, training_args)
+
+    # Save model
+    logging.info(f"Saving the model to {config['training']['trained_model_dir']}...")
+    # trainer.save_model(config['training']['trained_model_dir'])
+
+    # Evaluate model
+    logging.info("Evaluating the model on the test set...")
+    metrics = trainer.evaluate(eval_dataset=test_dataset)
+    logging.info(f"Test set metrics: {metrics}")
+
+    # Example prediction
+    example_patent = df['full_text'].iloc[0]
+    prediction = predict_proba(example_patent, model, tokenizer, device, config)
+    logging.info(f'Prediction for the example patent: {prediction}')
+
+    # Predict on all data
+    logging.info("Predicting on all data...")
+    df['predicted_yo2'] = predict_proba(df['full_text'].tolist(), model, tokenizer, device, config)
+
+    # Generate evaluation reports and plots
+    generate_evaluation_reports_and_plots(
+        df=df,
+        model=model,
+        tokenizer=tokenizer,
+        device=device,
+        config=config
+    )
+
+    # Display sample predictions
+    columns_to_view = ['title', 'abstract', 'claims', 'yo2', 'predicted_yo2']
+    logging.info("Displaying sample predictions:")
+    logging.info(df[columns_to_view].head())
+
+    
+
+if __name__ == '__main__':
+    main()
