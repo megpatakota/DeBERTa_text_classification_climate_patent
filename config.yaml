@@ -2,7 +2,7 @@
 
 data:
   data_file: "data/climate_patent_data.csv"
-  sample_size: 2  # Use null to process all data
+  sample_size: 2000  # Use null to process all data
   required_columns:
     - title
     - abstract
@@ -30,7 +30,7 @@ training:
   greater_is_better: false # true  # Ensure you're saving the best model based on AUC
   logging_steps: 10
   logging_first_step: true
-  use_cpu: false
+  use_mps_device: true
 
 logging:
   level: "INFO"

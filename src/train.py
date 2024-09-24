@@ -35,7 +35,7 @@ def get_training_arguments(config):
         load_best_model_at_end=config["training"]["load_best_model_at_end"],
         metric_for_best_model=config["training"]["metric_for_best_model"],
         greater_is_better=config["training"]["greater_is_better"],
-        use_cpu=not torch.cuda.is_available(),  # Automatically set to True if no GPU is available
+        use_mps_device=True,
         logging_steps=config["training"]["logging_steps"],
         logging_first_step=config["training"]["logging_first_step"],
     )
