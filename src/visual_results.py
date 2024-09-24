@@ -1,5 +1,4 @@
-# src/visual_results.py
-
+import numpy as np
 import os
 import logging
 import matplotlib
@@ -35,35 +34,8 @@ def generate_evaluation_reports_and_plots(df, model, tokenizer, device, config):
     try:
         logging.info("Generating evaluation reports and plots...")
 
-        # Get true labels and predictions
+        # Get true labels
         true_labels = df["yo2"]
-        predicted_labels = df["predicted_yo2"]
-
-        # Get labels for confusion matrix and classification report
-        if hasattr(model.config, "id2label") and model.config.id2label:
-            labels = list(model.config.id2label.values())
-        else:
-            labels = [str(i) for i in range(config["model"]["num_labels"])]
-
-        # Ensure the evaluation output directory exists
-        output_dir = config["evaluation"]["output_dir"]
-        os.makedirs(output_dir, exist_ok=True)
-
-        # Generate and save confusion matrix
-        plot_confusion_matrix(
-            true_labels=true_labels,
-            predicted_labels=predicted_labels,
-            labels=labels,
-            output_dir=output_dir,
-        )
-
-        # Generate and save classification report
-        generate_classification_report(
-            true_labels=true_labels,
-            predicted_labels=predicted_labels,
-            labels=labels,
-            output_dir=output_dir,
-        )
 
         # Get predicted probabilities
         logging.info("Calculating predicted probabilities...")
@@ -75,30 +47,48 @@ def generate_evaluation_reports_and_plots(df, model, tokenizer, device, config):
             config=config,
         )
 
+        # Convert predicted probabilities to binary labels (threshold of 0.5)
+        df["predicted_yo2"] = (df["predicted_proba"] >= 0.5).astype(int)
+
+        # Get binary predicted labels
+        predicted_labels = df["predicted_yo2"]
+
+        # Ensure the evaluation output directory exists
+        output_dir = config["evaluation"]["output_dir"]
+        os.makedirs(output_dir, exist_ok=True)
+
+        # Generate and save confusion matrix
+        plot_confusion_matrix(true_labels, predicted_labels, output_dir)
+
+        # Generate and save classification report
+        generate_classification_report(true_labels, predicted_labels, output_dir)
+
         # Generate and save ROC curve
-        plot_roc_curve(
-            true_labels=true_labels,
-            predicted_probabilities=df["predicted_proba"],
-            output_dir=output_dir,
-        )
+        plot_roc_curve(true_labels, df["predicted_proba"], output_dir)
 
         # Generate and save Precision-Recall curve
-        plot_precision_recall_curve(
-            true_labels=true_labels,
-            predicted_probabilities=df["predicted_proba"],
-            output_dir=output_dir,
-        )
+        plot_precision_recall_curve(true_labels, df["predicted_proba"], output_dir)
 
-        logging.info("Evaluation reports and plots generated.")
+        logging.info("Evaluation reports and plots generated successfully.")
 
     except Exception as e:
         logging.error(f"Failed to generate evaluation reports and plots: {e}")
 
 
-def plot_confusion_matrix(true_labels, predicted_labels, labels, output_dir):
+def plot_confusion_matrix(true_labels, predicted_labels, output_dir):
     try:
-        cm = confusion_matrix(true_labels, predicted_labels)
-        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
+        unique_labels = np.unique(np.concatenate([true_labels, predicted_labels]))
+        if len(unique_labels) == 1:
+            cm = confusion_matrix(
+                true_labels, predicted_labels, labels=[unique_labels[0]]
+            )
+            disp = ConfusionMatrixDisplay(
+                confusion_matrix=cm, display_labels=[str(unique_labels[0])]
+            )
+        else:
+            cm = confusion_matrix(true_labels, predicted_labels)
+            disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+
         disp.plot(cmap=plt.cm.Blues)
         plt.title("Confusion Matrix")
         plot_path = os.path.join(output_dir, "confusion_matrix.png")
@@ -109,11 +99,19 @@ def plot_confusion_matrix(true_labels, predicted_labels, labels, output_dir):
         logging.error(f"Failed to generate confusion matrix: {e}")
 
 
-def generate_classification_report(true_labels, predicted_labels, labels, output_dir):
+def generate_classification_report(true_labels, predicted_labels, output_dir):
     try:
-        report = classification_report(
-            true_labels, predicted_labels, target_names=labels
-        )
+        unique_labels = np.unique(np.concatenate([true_labels, predicted_labels]))
+        if len(unique_labels) == 1:
+            report = classification_report(
+                true_labels,
+                predicted_labels,
+                labels=[unique_labels[0]],
+                target_names=[str(unique_labels[0])],
+            )
+        else:
+            report = classification_report(true_labels, predicted_labels)
+
         report_file = os.path.join(output_dir, "classification_report.txt")
         with open(report_file, "w") as f:
             f.write(report)
@@ -152,16 +150,14 @@ def plot_precision_recall_curve(true_labels, predicted_probabilities, output_dir
         precision, recall, _ = precision_recall_curve(
             true_labels, predicted_probabilities
         )
-        average_precision = average_precision_score(
-            true_labels, predicted_probabilities
-        )
+        avg_precision = average_precision_score(true_labels, predicted_probabilities)
         plt.figure()
         plt.plot(
             recall,
             precision,
             color="b",
             lw=2,
-            label=f"Avg Precision = {average_precision:0.2f}",
+            label=f"Avg Precision = {avg_precision:0.2f}",
         )
         plt.xlabel("Recall")
         plt.ylabel("Precision")
