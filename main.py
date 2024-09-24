@@ -1,5 +1,7 @@
 # src/main.py
 
+import coloredlogs
+from rich.logging import RichHandler
 import logging
 import torch
 import yaml
@@ -14,13 +16,12 @@ from src.visual_results import generate_evaluation_reports_and_plots
 
 def setup_logging(config):
     logging_level = getattr(logging, config["logging"]["level"])
+
     logging.basicConfig(
         level=logging_level,
         format=config["logging"]["format"],
-        handlers=[
-            logging.FileHandler(config["logging"]["log_file"]),
-            logging.StreamHandler(),
-        ],
+        datefmt="[%X]",
+        handlers=[RichHandler()],
     )
 
 

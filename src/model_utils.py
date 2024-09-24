@@ -3,8 +3,13 @@
 import logging
 import torch
 from transformers import Trainer
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+from sklearn.metrics import (
+    accuracy_score,
+    precision_recall_fscore_support,
+    roc_auc_score,
+)
 from datasets import Dataset
+import numpy as np
 
 
 def tokenize_function(texts, tokenizer, config):
@@ -19,13 +24,26 @@ def tokenize_function(texts, tokenizer, config):
 
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
-    predictions = torch.argmax(torch.tensor(logits), dim=-1)
-    labels = torch.tensor(labels)
-    acc = accuracy_score(labels.cpu(), predictions.cpu())
+    predictions = np.argmax(logits, axis=-1)
+    acc = accuracy_score(labels, predictions)
     precision, recall, f1, _ = precision_recall_fscore_support(
-        labels.cpu(), predictions.cpu(), average="binary"
+        labels, predictions, average="binary"
     )
-    return {"accuracy": acc, "f1": f1, "precision": precision, "recall": recall}
+    # Compute ROC-AUC, but only if both classes are present
+    if len(np.unique(labels)) > 1:
+        roc_auc = roc_auc_score(
+            labels, logits[:, 1]
+        )  # Only if both classes are present
+    else:
+        roc_auc = None  # Cannot compute ROC-AUC with only one class
+
+    return {
+        "accuracy": acc,
+        "f1": f1,
+        "precision": precision,
+        "recall": recall,
+        "roc_auc": roc_auc,  # This will be None if only one class is present
+    }
 
 
 def create_datasets(
@@ -61,10 +79,10 @@ def predict_proba(texts, model, tokenizer, device, config):
         texts = [texts]
     inputs = tokenizer(
         texts,
-        padding='max_length',
+        padding="max_length",
         truncation=True,
-        max_length=config['model']['max_length'],
-        return_tensors="pt"
+        max_length=config["model"]["max_length"],
+        return_tensors="pt",
     )
     inputs = {k: v.to(device) for k, v in inputs.items()}
     model.eval()
@@ -72,4 +90,3 @@ def predict_proba(texts, model, tokenizer, device, config):
         outputs = model(**inputs)
         probs = torch.softmax(outputs.logits, dim=-1)
     return probs[:, 1].cpu().numpy()  # Probability of the positive class
-
