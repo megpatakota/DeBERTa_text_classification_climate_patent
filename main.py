@@ -1,4 +1,9 @@
 # src/main.py
+import warnings
+from sklearn.exceptions import UndefinedMetricWarning
+
+warnings.filterwarnings("ignore", category=UndefinedMetricWarning)
+warnings.filterwarnings("ignore", category=FutureWarning)
 
 import coloredlogs
 from rich.logging import RichHandler
@@ -79,19 +84,23 @@ def main():
     # Train model
     trainer = train_model(model, train_dataset, test_dataset, training_args)
 
-    # Save model
-    logging.info(f"Saving the model to {config['training']['trained_model_dir']}...")
-    # trainer.save_model(config['training']['trained_model_dir'])
+    # Save the trained model and tokenizer
+    trained_model_dir = config["training"]["trained_model_dir"]
+    logging.info(f"Saving the model to {trained_model_dir}...")
+    model.save_pretrained(trained_model_dir)
+    tokenizer.save_pretrained(trained_model_dir)
+
+    logging.info("Model and tokenizer saved successfully.")
 
     # Evaluate model
     logging.info("Evaluating the model on the test set...")
     metrics = trainer.evaluate(eval_dataset=test_dataset)
     logging.info(f"Test set metrics: {metrics}")
 
-    # Example prediction
-    example_patent = df["full_text"].iloc[0]
-    prediction = predict_proba(example_patent, model, tokenizer, device, config)
-    logging.info(f"Prediction for the example patent: {prediction}")
+    # # Example prediction
+    # example_patent = df["full_text"].iloc[0]
+    # prediction = predict_proba(example_patent, model, tokenizer, device, config)
+    # logging.info(f"Prediction for the example patent: {prediction}")
 
     # Predict on all data
     logging.info("Predicting on all data...")
