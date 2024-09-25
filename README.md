@@ -1,6 +1,3 @@
-Here’s the updated version of your README with a proper structure and markdown formatting to ensure that the sections for **usage**, **tokenization**, and **training** are clearly displayed. You can paste this directly into your README.md file in VS Code, and it should display properly on GitHub.
-
-```markdown
 # Climate Change Mitigation Technology Identification Using Patent Data with DeBERTa
 
 [![Personal Project](https://img.shields.io/badge/Project-Personal-green)](https://meg-patakota.github.io)
@@ -43,29 +40,19 @@ Once the dependencies are installed, you can run the model as follows:
 
 ### Training the Model
 
-To train the DeBERTa-based patent classification model:
-
 ```bash
 poetry run python src/train.py
 ```
 
-This command will begin the training process, where the model will learn to classify patent data according to climate change mitigation technology categories.
-
 ### Evaluating the Model
-
-To evaluate the performance of the model on a validation dataset, use:
 
 ```bash
 poetry run python src/evaluate.py
 ```
 
-This script will output key metrics, such as accuracy, precision, recall, f1-score, and ROC-AUC to assess how well the model is performing.
-
 ### Tokenization
 
-This project uses a custom tokenizer function defined in `model_utils.py`. The tokenizer prepares the patent texts by converting them into token embeddings that the DeBERTa model can process. Tokenization includes dynamic padding and truncation to manage long patent documents.
-
-To tokenize a dataset manually:
+This project uses a custom tokenizer function defined in `model_utils.py`, which tokenizes the patent texts using the DeBERTa tokenizer with dynamic padding and truncation. To tokenize a dataset:
 
 ```python
 from src.model_utils import tokenize_function
@@ -75,13 +62,11 @@ tokenized_data = tokenize_function(texts, tokenizer, config)
 
 ### Model Fine-Tuning
 
-To fine-tune the DeBERTa model on your own dataset, you can modify the configuration in the `config.json` file and run:
+To fine-tune the DeBERTa model on your own dataset, simply update the configuration in the `config.json` file and run:
 
 ```bash
 poetry run python src/train.py --config config.json
 ```
-
-This command will fine-tune the model based on your specific patent data and classification needs.
 
 ## Model Methodology
 
@@ -118,6 +103,5 @@ Contributions are welcome! Please feel free to submit a pull request or open an 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-```
 
-This format should display correctly on GitHub once pushed, including the correct markdown formatting for sections like **Installation**, **Usage**, **Tokenization**, and **Training**. Let me know if any further modifications are needed!
+---
