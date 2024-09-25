@@ -6,7 +6,7 @@
 
 > ⚠️ **Disclaimer:** This project is currently under active development. Features, code, and documentation are subject to change as it evolves.
 
-This project utilizes the **DeBERTa** model for classifying patent data into **climate change mitigation technologies**, as defined by the **IPCC** (Intergovernmental Panel on Climate Change) classification system. This tool is intended to assist in identifying technologies that contribute to climate change mitigation efforts, leveraging advanced machine learning techniques for large-scale patent analysis.
+This project utilizes the **DeBERTa** model for classifying patent data into **climate change mitigation technologies**, as defined by the **IPCC** (Intergovernmental Panel on Climate Change) classification system. This tool is intended to assist in identifying technologies that contribute to climate change mitigation efforts, leveraging advanced machine learning techniques.
 
 ## Table of Contents
 - [Features](#features)
@@ -14,15 +14,13 @@ This project utilizes the **DeBERTa** model for classifying patent data into **c
 - [Usage](#usage)
 - [Model Methodology](#model-methodology)
 - [Contributing](#contributing)
-- [License](#license)
 
 ## Features
 
 - **DeBERTa-based text classification**: The model is fine-tuned on patent texts to classify them according to the IPCC climate change mitigation categories.
-- **Efficient patent data processing**: Handles large-scale datasets and performs model training with minimal manual intervention.
-- **Advanced evaluation metrics**: Includes metrics like accuracy, ROC-AUC, precision, recall, and f1-score for assessing model performance on imbalanced data.
-- **Custom tokenization**: Implements tokenization with dynamic padding and truncation to handle long patent texts.
-- **Domain-specific model fine-tuning**: The model is optimized for identifying technologies in the climate change mitigation space, using a variety of metrics tailored to imbalanced datasets.
+- **Evaluation metrics**: Includes metrics like accuracy, ROC-AUC, precision, recall, and f1-score for assessing model performance on imbalanced data.
+- **Tokenization**: Implements tokenization with dynamic padding and truncation to handle long patent texts.
+- **Domain-specific model fine-tuning**: The model is optimized for identifying technologies in the climate change mitigation space such as patent title, abstract and claim, using a variety of metrics tailored to imbalanced datasets.
 
 ## Installation
 
@@ -99,9 +97,5 @@ The `transformers` Trainer API is used to streamline the training and evaluation
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a pull request or open an issue.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
