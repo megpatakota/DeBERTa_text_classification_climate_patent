@@ -179,7 +179,6 @@ def generate_evaluation_reports_and_plots(df, model, tokenizer, device, config):
             tokenizer=tokenizer,
             device=device,
             config=config,
-            threshold=0.3,
         )
 
         # Convert predicted probabilities to binary labels (threshold of 0.5)
@@ -313,8 +312,7 @@ import os
 import logging
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from imblearn.over_sampling import SMOTE
-import numpy as np
+from imblearn.over_sampling import RandomOverSampler
 
 
 def load_data(config):
@@ -352,25 +350,18 @@ def sample_data(df, config):
 
 def split_data(df):
     logging.info("Splitting data into training, validation, and testing sets...")
-
-    # Step 1: Split the data into training + validation and test sets (80% training + validation, 20% testing)
+    # First, split into train + validation and test
     train_val_texts, test_texts, train_val_labels, test_labels = train_test_split(
         df["full_text"].tolist(), df["yo2"].tolist(), test_size=0.2, random_state=42
     )
 
-    # Step 2: Apply SMOTE resampling to the training + validation set to address class imbalance
-    smote = SMOTE(random_state=42)
-    X_res, y_res = smote.fit_resample(
-        np.array(train_val_texts).reshape(-1, 1), train_val_labels
-    )
-
-    # Step 3: Split the resampled training + validation data into actual training (75%) and validation (25%) sets
+    # Now, split the train + validation into actual train and validation sets
     train_texts, val_texts, train_labels, val_labels = train_test_split(
-        X_res, y_res, test_size=0.25, random_state=42  # 25% for validation
+        train_val_texts,
+        train_val_labels,
+        test_size=0.25,  # 25% of train + validation set for validation
+        random_state=42,
     )
-
-    # Step 4: Reshape the test data if needed (optional, depending on the format of your data)
-    test_texts = np.array(test_texts).reshape(-1, 1)
 
     return train_texts, val_texts, test_texts, train_labels, val_labels, test_labels
 
