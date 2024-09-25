@@ -101,6 +101,8 @@ def predict_proba(texts, model, tokenizer, device, config):
     """
     if isinstance(texts, str):
         texts = [texts]
+
+    # Tokenize the input texts
     inputs = tokenizer(
         texts,
         padding="max_length",
@@ -108,9 +110,20 @@ def predict_proba(texts, model, tokenizer, device, config):
         max_length=config["model"]["max_length"],
         return_tensors="pt",
     )
+
+    # Move inputs to the correct device (MPS in this case)
     inputs = {k: v.to(device) for k, v in inputs.items()}
+
+    # Set the model to evaluation mode
     model.eval()
+
+    # Ensure the model is on the correct device
+    model.to(device)
+
     with torch.no_grad():
+        # Forward pass
         outputs = model(**inputs)
         probs = torch.softmax(outputs.logits, dim=-1)
-    return probs[:, 1].cpu().numpy()  # Probability of the positive class
+
+    # Return the probability for the positive class
+    return probs[:, 1].cpu().numpy()  # Move the results to CPU for further processing
