@@ -45,6 +45,7 @@ def generate_evaluation_reports_and_plots(df, model, tokenizer, device, config):
             tokenizer=tokenizer,
             device=device,
             config=config,
+            threshold=0.3,
         )
 
         # Convert predicted probabilities to binary labels (threshold of 0.5)

@@ -49,8 +49,8 @@ def train_model(model, train_dataset, val_dataset, test_dataset, training_args):
             labels = inputs.pop("labels")
             outputs = model(**inputs)
             logits = outputs.logits
-            # Use your Focal Loss implementation here
-            focal_loss = FocalLoss(alpha=0.25)  # Adjust alpha if needed
+            # Tune alpha and gamma here
+            focal_loss = FocalLoss(alpha=0.5, gamma=2)  # Adjust alpha as needed
             loss = focal_loss(logits, labels)
             return (loss, outputs) if return_outputs else loss
 
