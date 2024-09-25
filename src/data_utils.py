@@ -4,6 +4,7 @@ import os
 import logging
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from imblearn.over_sampling import RandomOverSampler
 
 
 def load_data(config):

@@ -128,6 +128,8 @@ def main():
     columns_to_view = ["title", "abstract", "claims", "yo2", "predicted_yo2"]
     logging.info("Displaying sample predictions:")
     logging.info(df[columns_to_view].head())
+    # save the dataframe
+    df.to_csv("data/predictions.csv", index=False)
 
 
 if __name__ == "__main__":
