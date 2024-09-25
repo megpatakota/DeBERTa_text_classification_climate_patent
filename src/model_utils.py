@@ -47,13 +47,27 @@ def compute_metrics(eval_pred):
 
 
 def create_datasets(
-    train_texts, train_labels, test_texts, test_labels, tokenizer, config
+    train_texts,
+    train_labels,
+    val_texts,
+    val_labels,
+    test_texts,
+    test_labels,
+    tokenizer,
+    config,
 ):
     logging.info("Tokenizing training data...")
     train_inputs = tokenize_function(train_texts, tokenizer, config)
+
+    logging.info("Tokenizing validation data...")
+    val_inputs = tokenize_function(
+        val_texts, tokenizer, config
+    )  # Tokenize validation data
+
     logging.info("Tokenizing testing data...")
     test_inputs = tokenize_function(test_texts, tokenizer, config)
-    logging.info("Creating training and testing datasets...")
+
+    logging.info("Creating training, validation, and testing datasets...")
     train_dataset = Dataset.from_dict(
         {
             "input_ids": train_inputs["input_ids"],
@@ -61,6 +75,15 @@ def create_datasets(
             "labels": torch.tensor(train_labels),
         }
     )
+
+    val_dataset = Dataset.from_dict(
+        {
+            "input_ids": val_inputs["input_ids"],
+            "attention_mask": val_inputs["attention_mask"],
+            "labels": torch.tensor(val_labels),
+        }
+    )
+
     test_dataset = Dataset.from_dict(
         {
             "input_ids": test_inputs["input_ids"],
@@ -68,7 +91,8 @@ def create_datasets(
             "labels": torch.tensor(test_labels),
         }
     )
-    return train_dataset, test_dataset
+
+    return train_dataset, val_dataset, test_dataset  # Return all three datasets
 
 
 def predict_proba(texts, model, tokenizer, device, config):
