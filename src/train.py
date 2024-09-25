@@ -41,9 +41,10 @@ def get_training_arguments(config):
     )
 
 
-def train_model(model, train_dataset, val_dataset, test_dataset, training_args):
-    logging.info("Initializing the Trainer with validation...")
+def train_model(model, train_dataset, test_dataset, training_args):
+    logging.info("Initializing the Trainer...")
 
+    # Define custom Trainer class to handle focal loss
     class CustomTrainer(Trainer):
         def compute_loss(self, model, inputs, return_outputs=False):
             labels = inputs.pop("labels")
@@ -58,15 +59,24 @@ def train_model(model, train_dataset, val_dataset, test_dataset, training_args):
         model=model,
         args=training_args,
         train_dataset=train_dataset,
-        eval_dataset=val_dataset,  # Use validation set for evaluation
+        eval_dataset=test_dataset,
         compute_metrics=compute_metrics,
     )
 
-    logging.info("Starting training with validation...")
-    trainer.train()
+    # Use tqdm to display a progress bar during training
+    logging.info("Starting training with progress bar...")
+    progress_bar = tqdm(
+        total=training_args.num_train_epochs, desc="Training Progress", unit="epoch"
+    )
 
-    logging.info("Training completed. Evaluating on the validation set...")
-    validation_metrics = trainer.evaluate(eval_dataset=val_dataset)
-    logging.info(f"Validation set metrics: {validation_metrics}")
+    try:
+        trainer.train()
+        for epoch in range(training_args.num_train_epochs):
+            progress_bar.update(1)
+        progress_bar.close()
+        logging.info("Training completed successfully.")
+    except Exception as e:
+        logging.error(f"An error occurred during training: {e}")
+        raise e
 
     return trainer

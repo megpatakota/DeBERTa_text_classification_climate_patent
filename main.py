@@ -67,22 +67,13 @@ def main():
     df = load_data(config)
     df = preprocess_data(df, config)
     df = sample_data(df, config)
-    # Split data into train, validation, and test sets
-    train_texts, val_texts, test_texts, train_labels, val_labels, test_labels = (
-        split_data(df)
-    )
+    train_texts, test_texts, train_labels, test_labels = split_data(df)
 
     # Create datasets
-    train_dataset, val_dataset, test_dataset = create_datasets(
-        train_texts,
-        train_labels,
-        val_texts,
-        val_labels,
-        test_texts,
-        test_labels,
-        tokenizer,
-        config,
+    train_dataset, test_dataset = create_datasets(
+        train_texts, train_labels, test_texts, test_labels, tokenizer, config
     )
+
     # Get device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
@@ -91,9 +82,7 @@ def main():
     training_args = get_training_arguments(config)
 
     # Train model
-    trainer = train_model(
-        model, train_dataset, val_dataset, test_dataset, training_args
-    )
+    trainer = train_model(model, train_dataset, test_dataset, training_args)
 
     # Save the trained model and tokenizer
     trained_model_dir = config["training"]["trained_model_dir"]
